@@ -65,14 +65,6 @@ impl FrameBufferConfig {
         };
     }
     pub fn write_pixel(&mut self, x: usize, y: usize, rgb: [u8; 3]) {
-        // x/8xw 0x100000
-        unsafe {
-            let dbg: &mut [u64] = core::slice::from_raw_parts_mut((0x100000) as *mut u64, 4);
-            dbg[0] = write_pixel_rgb as u64;
-            dbg[1] = write_pixel_bgr as u64;
-            dbg[2] = self.writer as u64;
-            dbg[3] = 0;
-        }
         unsafe {
             (self.writer)(
                 self.pixels_per_scan_line,
@@ -90,13 +82,5 @@ impl FrameBufferConfig {
     }
     pub fn get_vertical_resolution(&self) -> usize {
         self.vertical_resolution
-    }
-    pub unsafe fn heap_clone(&self, heap: *mut FrameBufferConfig) {
-        (*heap).base = self.base;
-        (*heap).pixels_per_scan_line = self.pixels_per_scan_line;
-        (*heap).horizontal_resolution = self.horizontal_resolution;
-        (*heap).vertical_resolution = self.vertical_resolution;
-        (*heap).pixel_format = self.pixel_format;
-        (*heap).writer = self.writer
     }
 }
