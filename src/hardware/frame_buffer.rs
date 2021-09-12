@@ -32,9 +32,13 @@ pub enum PixelFormat {
     RGBReserved8BitParColor,
     BGRReserved8BitParColor,
 }
-#[derive(Debug)]
+
+// MemroyWarning: MP対応した場合、一つのフレームバッファに対して同時複数アクセスが来る可能性あり。
+// 理由1：フレームバッファのポインタへ変換するアドレス（=base）を含む構造体にClone/Copyしているため。
+// 理由2：usizeから*mut u8へ型変換しているだけで、メモリバリア機構を使っていないナイーブな実装のため競合が起こりえる。
+#[derive(Debug,Clone,Copy)]
 pub struct FrameBufferConfig {
-    base: *mut u8,
+    base: usize,
     pixels_per_scan_line: usize,
     horizontal_resolution: usize,
     vertical_resolution: usize,
@@ -43,7 +47,7 @@ pub struct FrameBufferConfig {
 }
 impl FrameBufferConfig {
     pub fn new(
-        base: *mut u8,
+        base: usize,
         pixels_per_scan_line: usize,
         horizontal_resolution: usize,
         vertical_resolution: usize,
@@ -70,7 +74,7 @@ impl FrameBufferConfig {
                 self.pixels_per_scan_line,
                 self.horizontal_resolution,
                 self.vertical_resolution,
-                self.base,
+                self.base as *mut u8,
                 x,
                 y,
                 rgb,
